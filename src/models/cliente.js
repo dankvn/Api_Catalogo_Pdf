@@ -13,6 +13,6 @@ const clienteSchema = new mongoose.Schema({
   }
 });
 
-const Cliente = mongoose.model('Cliente', clienteSchema);
+const cliente = mongoose.model('cliente', clienteSchema);
 
-export default Cliente;
+export default cliente;
