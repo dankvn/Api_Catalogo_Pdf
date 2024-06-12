@@ -1,4 +1,4 @@
-import Pedido from '../models/Pedido.js';
+import Pedido from '../models/pedido.js';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 
