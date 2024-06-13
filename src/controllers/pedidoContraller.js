@@ -1,4 +1,4 @@
-import Pedido from '../models/Pedido.js';
+import Pedido from '../models/pedido.js';
 import Cliente from '../models/cliente.js';
 import { generatePDF } from '../utils/pdfGenerator.js';
 import path from 'path';
