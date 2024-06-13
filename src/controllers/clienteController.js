@@ -1,8 +1,8 @@
-import cliente from '../models/cliente.js';
+import Cliente from '../models/Cliente.js';
 
 export const crearCliente = async (req, res) => {
   try {
-    const nuevoCliente = new cliente(req.body);
+    const nuevoCliente = new Cliente(req.body);
     const clienteGuardado = await nuevoCliente.save();
     res.status(201).send(clienteGuardado);
   } catch (err) {
@@ -12,9 +12,10 @@ export const crearCliente = async (req, res) => {
 
 export const obtenerClientes = async (req, res) => {
   try {
-    const clientes = await cliente.find();
+    const clientes = await Cliente.find();
     res.status(200).send(clientes);
   } catch (err) {
     res.status(500).send(err.message);
   }
 };
+

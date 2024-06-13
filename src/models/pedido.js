@@ -1,20 +1,31 @@
 import mongoose from 'mongoose';
 
-const pedidoSchema = new mongoose.Schema({
-  cliente_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Cliente', required: true },
-  fecha_pedido: { type: Date, default: Date.now },
-  estado: { type: String, default: 'pendiente' },
-  total: { type: Number, required: true },
-  productos: [
-    {
-      producto_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Producto', required: true },
-      cantidad: { type: Number, required: true },
-      precio_unitario: { type: Number, required: true }
-    }
-  ]
+const PedidoSchema = new mongoose.Schema({
+  nombre: {
+    type: String,
+    required: true
+  },
+  email: {
+    type: String,
+    required: true
+  },
+  telefono: {
+    type: String,
+    required: true
+  },
+  total: {
+    type: Number,
+    required: true
+  },
+  cliente_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Cliente',
+    required: true
+  },
+  pdfPath: {
+    type: String
+  }
 });
 
-const Pedido = mongoose.model('Pedido', pedidoSchema);
-
-export default Pedido;
+export default mongoose.model('Pedido', PedidoSchema);
 

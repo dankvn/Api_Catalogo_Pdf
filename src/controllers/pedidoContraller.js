@@ -1,46 +1,64 @@
-import Pedido from '../models/pedido.js';
-import PDFDocument from 'pdfkit';
+import Pedido from '../models/Pedido.js';
+import Cliente from '../models/Cliente.js';
+import { generatePDF } from '../utils/pdfGenerator.js';
+import path from 'path';
 import fs from 'fs';
 
-
+// Función para crear un nuevo pedido
 export const crearPedido = async (req, res) => {
   try {
-    const nuevoPedido = new Pedido(req.body);
-    const pedidoGuardado = await nuevoPedido.save();
-    const cliente = await Cliente.findById(pedidoGuardado.cliente_id);
+    const { nombre, email, telefono, total, cliente_id } = req.body;
 
-    // Crear y guardar el PDF
-    const doc = new PDFDocument();
-    const pdfPath = `./pdfs/pedido_${pedidoGuardado._id}.pdf`;
-    doc.pipe(fs.createWriteStream(pdfPath));
-    doc.fontSize(25).text('Factura', { align: 'center' });
-    doc.moveDown();
-    doc.fontSize(16).text(`Cliente: ${cliente.nombre}`);
-    doc.text(`Email: ${cliente.email}`);
-    doc.text(`Teléfono: ${cliente.telefono}`);
-    doc.text(`Dirección: ${cliente.direccion.calle}, ${cliente.direccion.ciudad}, ${cliente.direccion.codigo_postal}, ${cliente.direccion.pais}`);
-    doc.moveDown();
-    doc.fontSize(20).text('Detalles del Pedido');
-    doc.moveDown();
-    pedidoGuardado.productos.forEach(producto => {
-      doc.fontSize(16).text(`Producto: ${producto.producto_id}`);
-      doc.text(`Cantidad: ${producto.cantidad}`);
-      doc.text(`Precio Unitario: ${producto.precio_unitario}`);
-      doc.moveDown();
-    });
-    doc.fontSize(16).text(`Total: ${pedidoGuardado.total}`);
-    doc.end();
+    // Verifica que los datos están presentes
+    if ( !email || !telefono || !total || !cliente_id) {
+      return res.status(400).json({ message: 'Todos los campos son requeridos' });
+    }
+
+    const nuevoPedido = new Pedido({ nombre, email, telefono, total, cliente_id });
+    const pedidoGuardado = await nuevoPedido.save();
+    
+    // Obtiene el cliente asociado al pedido
+    const cliente = await Cliente.findById(cliente_id);
+
+    // Generar el PDF
+    const pdfPath = path.join('src', 'pdfs', `pedido_${pedidoGuardado._id}.pdf`);
+    const pdfDir = path.dirname(pdfPath);
+
+    // Verificar si el directorio existe, si no, crearlo
+    if (!fs.existsSync(pdfDir)) {
+      fs.mkdirSync(pdfDir, { recursive: true });
+    }
+
+    await generatePDF(pedidoGuardado, pdfPath);
+
+    // Guardar la ruta del PDF en el pedido
+    pedidoGuardado.pdfPath = pdfPath;
+    await pedidoGuardado.save();
 
     res.status(201).json({ pedido: pedidoGuardado, pdfPath });
   } catch (err) {
+    console.error('[ERROR]:', err);
     res.status(400).send(err.message);
   }
 };
+
+// Función para obtener todos los pedidos
 export const obtenerPedido = async (req, res) => {
   try {
     const pedidos = await Pedido.find();
     res.status(200).send(pedidos);
   } catch (err) {
     res.status(500).send(err.message);
+  }
+};
+
+// Función para obtener el PDF de un pedido
+export const obtenerPedidoPDF = (req, res) => {
+  const pdfPath = path.join(process.cwd(), 'src', 'pdfs', req.params.pdfPath);
+
+  if (fs.existsSync(pdfPath)) {
+    res.sendFile(pdfPath);
+  } else {
+    res.status(404).send({ message: 'PDF not found' });
   }
 };
