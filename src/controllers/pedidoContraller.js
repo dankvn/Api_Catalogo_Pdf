@@ -1,5 +1,5 @@
 import Pedido from '../models/Pedido.js';
-import Cliente from '../models/Cliente.js';
+import Cliente from '../models/cliente.js';
 import { generatePDF } from '../utils/pdfGenerator.js';
 import path from 'path';
 import fs from 'fs';
