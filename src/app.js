@@ -1,5 +1,4 @@
 import express from 'express';
-import bodyParser from 'body-parser';
 import connectDB from './config.js';
 import clienteRoutes from './routes/clientes.js';
 import productoRoutes from './routes/productos.js';
@@ -10,6 +9,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 connectDB();
+
+
+
 
 // Middlewares
 app.use(express.json());
