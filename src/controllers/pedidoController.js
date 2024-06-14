@@ -32,7 +32,8 @@ export const crearPedido = async (req, res) => {
     // Guardar la ruta del PDF en el pedido
     pedidoGuardado.pdfPath = pdfPath;
     await pedidoGuardado.save();
-
+// Construir la URL pública del PDF
+const pdfUrl = `http://localhost:80/api/pdfs/pedido_${pedidoGuardado._id}.pdf`;
     res.status(201).json({ pedido: pedidoGuardado, pdfPath });
   } catch (err) {
     res.status(400).send(err.message);

@@ -5,12 +5,11 @@ import productoRoutes from './routes/productos.js';
 import pedidoRoutes from './routes/pedidos.js'
 
 
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 connectDB();
-
-
 
 
 // Middlewares
