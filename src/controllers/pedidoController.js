@@ -7,20 +7,34 @@ import fs from 'fs';
 // Función para crear un nuevo pedido
 export const crearPedido = async (req, res) => {
   try {
-    const { nombre, email, telefono, total, cliente_id } = req.body;
+    const { nombre, email, telefono, estado, productos } = req.body;
 
     // Verifica que los datos están presentes
-    if (!nombre || !email || !telefono || !total || !cliente_id) {
+    if (!nombre || !email || !telefono || !estado || !productos) {
       return res.status(400).json({ message: 'Todos los campos son requeridos' });
     }
 
-    const nuevoPedido = new Pedido({ nombre, email, telefono, total, cliente_id });
+    // Crear y guardar cliente
+    const nuevoCliente = new Cliente({ nombre, email, telefono});
+    const clienteGuardado = await nuevoCliente.save();
+
+    // Calcular el precio total
+    const precio_total = productos.reduce((total, producto) => total + (producto.cantidad * producto.precio_unitario), 0);
+
+    // Crear pedido con cliente_id
+    const nuevoPedido = new Pedido({
+      cliente_id: clienteGuardado._id,
+      estado,
+      productos,
+      precio_total
+    });
+
     const pedidoGuardado = await nuevoPedido.save();
-    const cliente = await Cliente.findById(pedidoGuardado.cliente_id); // Asegúrate de que cliente está definido aquí
 
     // Generar el PDF
     const pdfPath = path.join('src', 'pdfs', `pedido_${pedidoGuardado._id}.pdf`);
     const pdfDir = path.dirname(pdfPath);
+ 
 
     // Verificar si el directorio existe, si no, crearlo
     if (!fs.existsSync(pdfDir)) {
@@ -53,7 +67,7 @@ export const obtenerPedido = async (req, res) => {
 // Función para obtener el PDF de un pedido
 export const obtenerPedidoPDF = (req, res) => {
   const pdfPath = path.join(process.cwd(), 'src', 'pdfs', req.params.pdfPath);
-
+  
   if (fs.existsSync(pdfPath)) {
     res.sendFile(pdfPath);
   } else {
