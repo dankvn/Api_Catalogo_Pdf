@@ -11,31 +11,47 @@ export const generatePDF = async (pedido, pdfPath) => {
         return reject(new Error('Cliente no encontrado'));
       }
 
-      const doc = new PDFDocument({ margin: 30, layout: 'landscape', size: 'A4' });
+      const doc = new PDFDocument({ margin: 30 });
       const stream = fs.createWriteStream(pdfPath);
 
       doc.pipe(stream);
 
-      // Estilos y colores
-      const primaryColor = '#4A90E2';
-      const secondaryColor = '#F5A623';
-      const textColor = '#333333';
+      // Información del negocio
+      const businessName = 'Nombre del Negocio';
+      const businessAddress = 'Dirección del Negocio';
+      const businessPhone = 'Teléfono del Negocio';
+      const businessEmail = 'Email del Negocio';
 
-      // Agregar encabezado con color de fondo
+      // Colores
+      const headerColor = '#4CAF50';
+      const tableHeaderColor = '#D3D3D3';
+      const tableRowColor = '#F9F9F9';
+      const tableRowAltColor = '#FFFFFF';
+
+      // Agregar encabezado del negocio
       doc
-        .rect(0, 0, doc.page.width, 60)
-        .fill(primaryColor)
-        .fillColor('white')
-        .fontSize(24)
-        .text('Orden de Consumo', 30, 20);
+        .fontSize(14)
+        .fillColor(headerColor)
+        .text(businessName, { align: 'right' })
+        .fontSize(10)
+        .fillColor('black')
+        .text(businessAddress, { align: 'right' })
+        .text(businessPhone, { align: 'right' })
+        .text(businessEmail, { align: 'right' })
+        .moveDown(1.5);
 
-      doc.moveDown();
+      // Agregar encabezado de la orden de pago
+      doc
+        .fontSize(20)
+        .fillColor(headerColor)
+        .text('Orden de Pago', { align: 'center' })
+        .moveDown();
 
       // Información del cliente
       doc
-        .fillColor(textColor)
+        .fillColor('black')
         .fontSize(12)
-        .text(`Pedido ID: ${pedido._id}`, 30, 80)
+        .text(`Pedido ID: ${pedido._id}`)
         .text(`Nombre: ${cliente.nombre}`)
         .text(`Email: ${cliente.email}`)
         .text(`Teléfono: ${cliente.telefono}`)
@@ -45,23 +61,25 @@ export const generatePDF = async (pedido, pdfPath) => {
 
       // Tabla de productos
       doc
-        .fillColor(primaryColor)
-        .fontSize(14)
+        .fontSize(12)
         .text('Productos:', { underline: true })
         .moveDown(0.5);
 
       const tableTop = doc.y;
-      const itemCodeX = 30;
+      const itemCodeX = 50;
       const descriptionX = 150;
       const quantityX = 300;
-      const priceX = 400;
-      const totalX = 500;
+      const priceX = 350;
+      const totalX = 450;
 
-      // Headers
+      // Encabezados de la tabla
       doc
+        .fillColor(tableHeaderColor)
+        .rect(itemCodeX - 5, tableTop - 2, totalX + 50, 20)
+        .fill()
+        .fillColor('black')
         .font('Helvetica-Bold')
         .fontSize(10)
-        .fillColor(secondaryColor)
         .text('Producto', itemCodeX, tableTop)
         .text('Cantidad', quantityX, tableTop)
         .text('Precio Unitario', priceX, tableTop)
@@ -69,35 +87,34 @@ export const generatePDF = async (pedido, pdfPath) => {
 
       doc.moveDown();
 
-      // Items
-      let yPosition = tableTop + 25;
-      doc.font('Helvetica').fontSize(10).fillColor(textColor);
-
+      // Productos
+      let yPosition = tableTop + 20;
+      let isAltRow = false;
       pedido.productos.forEach(producto => {
+        const rowColor = isAltRow ? tableRowAltColor : tableRowColor;
         doc
+          .fillColor(rowColor)
+          .rect(itemCodeX - 5, yPosition - 2, totalX + 50, 20)
+          .fill()
+          .fillColor('black')
+          .font('Helvetica')
+          .fontSize(10)
           .text(producto.nombre, itemCodeX, yPosition)
           .text(producto.cantidad, quantityX, yPosition, { width: 90, align: 'center' })
           .text(`$${producto.precio_unitario.toFixed(2)}`, priceX, yPosition, { width: 90, align: 'right' })
           .text(`$${(producto.cantidad * producto.precio_unitario).toFixed(2)}`, totalX, yPosition, { width: 90, align: 'right' });
 
         yPosition += 20;
+        isAltRow = !isAltRow;
       });
 
       // Precio total
+      yPosition += 10;
       doc
+        .fillColor('black')
         .font('Helvetica-Bold')
         .fontSize(12)
-        .fillColor(textColor)
-        .text(`Precio Total: $${pedido.precio_total.toFixed(2)}`, { align: 'right' })
-        .moveDown();
-
-      // Footer
-      doc
-        .rect(0, doc.page.height - 50, doc.page.width, 50)
-        .fill(primaryColor)
-        .fillColor('white')
-        .fontSize(10)
-        .text('Gracias por su compra', 30, doc.page.height - 40, { align: 'center', width: doc.page.width - 60 });
+        .text(`Precio Total: $${pedido.precio_total.toFixed(2)}`, totalX, yPosition, { width: 90, align: 'right' });
 
       doc.end();
 
