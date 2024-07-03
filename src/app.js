@@ -20,6 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api', clienteRoutes);
 app.use('/api', productoRoutes);
 app.use('/api', pedidoRoutes);
+app.use('/api', webhookRoutes); // Añade la ruta del webhook
 
 
 app.listen(PORT, () => {
