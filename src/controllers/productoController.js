@@ -4,7 +4,7 @@ import axios from 'axios';
 
 const externalApiUrl = 'https://api-catalogo-pdf.onrender.com/api/productos';
 const strapiApiUrl = 'http://localhost:1337/api/productos'; // Cambia esto si tu Strapi no está en localhost
-const strapiToken = 'YOUR_STRAPI_AUTH_TOKEN'; // Reemplaza con tu token de autenticación
+const strapiToken = (process.env.STRAPI_TOKEN); // Reemplaza con tu token de autenticación
 
 export const crearProducto = async (req, res) => {
   try {
